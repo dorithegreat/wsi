@@ -2,12 +2,9 @@ package com.minmax;
 
 // used for priority queue entry
 public class Pair {
-    private long item;
-    private int priority;
+    private final long item;
+    private final int priority;
 
-    public Pair(){
-
-    }
 
     public Pair(long item, int priority){
         this.item = item;
@@ -20,5 +17,18 @@ public class Pair {
 
     public int getPriority(){
         return priority;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Pair)) {
+            return false;
+        }
+        return ((Pair) obj).item == this.item;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(item);
     }
 }
