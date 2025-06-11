@@ -1,6 +1,7 @@
 package com.minmax;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -8,88 +9,109 @@ public class StateGenerator {
 
 
     public static long generateInitialState(){
-        // boolean exitFlag = false;
-        // long state = -1;
-        // Random random = new Random();
+        boolean exitFlag = false;
+        long state = -1;
+        Random random = new Random();
 
-        // // the chance of a random state being valid is 50/50 so it's unlikely this will execute more than a couple times
-        // while (! exitFlag) {
-        //     ArrayList<Integer> digits = new ArrayList<>();
-        //     digits.add(1);
-        //     for (int i = 2; i < 16; i++) {
-        //         digits.add(random.nextInt(digits.size() + 1), i);
-        //     }
-        //     digits.add(0);
-        //     if (validateState(digits)) {
-        //         exitFlag = true;
-        //         state = encodeState(digits);
-        //     }
-        // }
+        // the chance of a random state being valid is 50/50 so it's unlikely this will execute more than a couple times
+        while (! exitFlag) {
+            ArrayList<Integer> numbers = new ArrayList<>();
 
-        // return state;
-
-        long state = 0x123456789ABCDEF0L; // Goal state
-        Random rand = new Random();
-        int blankPos = 15;
-
-        // To prevent immediate undo moves, track previous position
-        int lastBlankPos = -1;
-
-        for (int i = 0; i < 20; i++) {
-            List<Integer> neighbors = new ArrayList<>();
-
-            int row = blankPos / 4;
-            int col = blankPos % 4;
-
-            if (row > 0) neighbors.add(blankPos - 4); // Up
-            if (row < 3) neighbors.add(blankPos + 4); // Down
-            if (col > 0) neighbors.add(blankPos - 1); // Left
-            if (col < 3) neighbors.add(blankPos + 1); // Right
-
-            // Filter out move that would undo the previous one
-            if (lastBlankPos != -1) {
-                neighbors.remove((Integer) lastBlankPos);
+            // Add numbers from 1 to 15
+            for (int i = 1; i <= 15; i++) {
+                numbers.add(i);
             }
 
-            int nextPos = neighbors.get(rand.nextInt(neighbors.size()));
-            state = swapTiles(state, blankPos, nextPos);
+            // Shuffle the list to randomize the order
+            Collections.shuffle(numbers);
 
-            lastBlankPos = blankPos;
-            blankPos = nextPos;
+
+            numbers.add(0);
+            // System.out.println(digits);
+            if (validateState(numbers)) {
+                exitFlag = true;
+                state = encodeState(numbers);
+            }
         }
 
         return state;
+
+        // long state = 0x123456789ABCDEF0L; // Goal state
+        // Random rand = new Random();
+        // int blankPos = 15;
+
+        // // To prevent immediate undo moves, track previous position
+        // int lastBlankPos = -1;
+
+        // for (int i = 0; i < 2; i++) {
+        //     List<Integer> neighbors = new ArrayList<>();
+
+        //     int row = blankPos / 4;
+        //     int col = blankPos % 4;
+
+        //     if (row > 0) neighbors.add(blankPos - 4); // Up
+        //     if (row < 3) neighbors.add(blankPos + 4); // Down
+        //     if (col > 0) neighbors.add(blankPos - 1); // Left
+        //     if (col < 3) neighbors.add(blankPos + 1); // Right
+
+        //     // Filter out move that would undo the previous one
+        //     if (lastBlankPos != -1) {
+        //         neighbors.remove((Integer) lastBlankPos);
+        //     }
+
+        //     int nextPos = neighbors.get(rand.nextInt(neighbors.size()));
+        //     state = swapTiles(state, blankPos, nextPos);
+
+        //     lastBlankPos = blankPos;
+        //     blankPos = nextPos;
+        // }
+        // // if (! validateState(state)) {
+            
+        // // }
+
+        // return state;
     }
 
     public static long encodeState(ArrayList<Integer> state){
-        long output = 0L;
-        for (int i = 0; i < 16; i++) {
-            int value = state.get(i);
-            if (value < 0 || value > 15) {
-                throw new IllegalArgumentException("Tile values must be between 0 and 15.");
-            }
-            output |= ((long) value) << (i * 4);
+        long output = 0;
+
+        for (Integer integer : state) {
+            output *= 16;
+            output += integer;
         }
+
         return output;
     }
 
 
 
-    private static boolean validateState(ArrayList<Integer> state){
-        int inversionCount = getInversionCount(state);
+    public static boolean validateState(ArrayList<Integer> tiles){
+        if (tiles.size() != 16) {
+            throw new IllegalArgumentException("Puzzle must have exactly 16 tiles (15 + 0).");
+        }
 
-        if (state.size() % 2 == 1) {
-            return inversionCount % 2 == 0;
-        }
-        else{
-            int position = findXPosition(state);
-            if (position % 2 == 1) {
-                return inversionCount % 2 == 0;
-            }
-            else{
-                return inversionCount % 2 == 1;
+        int inversions = 0;
+        for (int i = 0; i < 16; i++) {
+            int current = tiles.get(i);
+            if (current == 0) continue; // Skip the blank
+            for (int j = i + 1; j < 16; j++) {
+                int next = tiles.get(j);
+                if (next == 0) continue;
+                if (current > next) inversions++;
             }
         }
+
+        // Find row of the blank tile (0), counting from bottom (row 1 to 4)
+        int blankIndex = tiles.indexOf(0);
+        int rowFromBottom = 4 - (blankIndex / 4);
+
+        // Apply solvability rule
+        if ((inversions % 2 == 0 && rowFromBottom % 2 == 1) ||
+            (inversions % 2 == 1 && rowFromBottom % 2 == 0)) {
+            return true;
+        }
+
+        return false;
 
     }
 

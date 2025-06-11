@@ -15,13 +15,13 @@ public class AppTest
     /**
      * Rigorous Test :-)
      */
-    @Test
-    public static void stateEncodingTest() {
-        ArrayList<Integer> number = new ArrayList<>();
-        for (int i = 0; i < 16; i++) {
-            number.add(i);
-        }
+    // @Test
+    // public static void stateEncodingTest() {
+    //     ArrayList<Integer> number = new ArrayList<>();
+    //     for (int i = 0; i < 16; i++) {
+    //         number.add(i);
+    //     }
 
     
-    }
+    // }
 }
